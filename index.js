@@ -7,7 +7,7 @@ const { store } = require('./data_access/store');
 const application = express();
 const port = process.env.PORT || 4003;
 
-//middlewaresr
+//middlewares
 application.use(cors());
 application.use(express.json());
 
@@ -25,6 +25,23 @@ application.post('/register', (request, response) => {
         .catch(e => {
             console.log(e);
             response.status(500).json({ done: false, message: "The customer was not added due to an error." });
+        });
+});
+
+application.post('/login', (request, response) => {
+    let email = request.body.email;
+    let password = request.body.password;
+    store.login(email, password)
+        .then(x => {
+            if (x.valid) {
+                response.status(200).json({ done: true, message: "Customer login successful" });
+            } else {
+                response.status(401).json({ done: false, message: x.message });
+            }
+        })
+        .catch(e => {
+            console.log(e);
+            response.status(500).json({ done: false, message: "Something went wrong." });
         });
 });
 
