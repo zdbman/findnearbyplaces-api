@@ -1,0 +1,22 @@
+{
+  "name": "findnearbyplaces-api",
+  "version": "1.0.0",
+  "description": "For Project 1.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zdbman/findnearbyplaces-api.git"
+  },
+  "author": "Zachary Kyle Halperin",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zdbman/findnearbyplaces-api/issues"
+  },
+  "homepage": "https://github.com/zdbman/findnearbyplaces-api#readme",
+  "dependencies": {
+    "express": "^4.17.3"
+  }
+}
