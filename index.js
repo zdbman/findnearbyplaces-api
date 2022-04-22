@@ -28,22 +28,6 @@ application.post('/register', (request, response) => {
         });
 });
 
-application.post('/login', (request, response) => {
-    let email = request.body.email;
-    let password = request.body.password;
-    store.login(email, password)
-        .then(x => {
-            if (x.valid) {
-                response.status(200).json({ done: true, message: "Customer login successful" });
-            } else {
-                response.status(401).json({ done: false, message: x.message });
-            }
-        })
-        .catch(e => {
-            console.log(e);
-            response.status(500).json({ done: false, message: "Something went wrong." });
-        });
-});
 
 application.listen(port, () => {
     console.log(`Listening to the port ${port}`);
