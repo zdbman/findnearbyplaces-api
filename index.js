@@ -7,7 +7,7 @@ const { store } = require('./data_access/store');
 const application = express();
 const port = process.env.PORT || 4003;
 
-//middlewares
+//middlewarest
 application.use(cors());
 application.use(express.json());
 
