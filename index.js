@@ -1,7 +1,7 @@
 //Dependencies
 const express = require('express');
 const cors = require('cors');
-const { customers } = require('./temporarily_store/customers');
+//const { customers } = require('./temporarily_store/customers');
 const { store } = require('./data_access/store');
 
 const application = express();
@@ -27,7 +27,6 @@ application.post('/register', (request, response) => {
             response.status(500).json({ done: false, message: "The customer was not added due to an error." });
         });
 });
-
 
 application.listen(port, () => {
     console.log(`Listening to the port ${port}`);
