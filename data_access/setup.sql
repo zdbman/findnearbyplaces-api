@@ -18,7 +18,7 @@ create table yelp.customer
 (
 	id bigserial primary key,
 	email varchar(256) not null unique,
-	password varchar(8) not null
+	password varchar(100) not null
 );
 
 create table yelp.loc
