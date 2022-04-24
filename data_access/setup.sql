@@ -6,6 +6,7 @@ drop table if exists yelp.reviews;
 drop table if exists yelp.loc;
 drop table if exists yelp.category;
 drop table if exists yelp.customer;
+drop table if exists yelp.photo;
 
 create table yelp.category
 (
@@ -40,7 +41,6 @@ create table yelp.reviews
 	rating varchar(2) not null
 );
 
-drop table if exists yelp.photo;
 create table yelp.photo
 (
 	id bigserial primary key,
