@@ -17,14 +17,14 @@ const pool = new Pool(connection);
 //console.log("Pool:", pool);
 
 let store = {
-    addCustomer: (email, password) => {
+    register: (email, password) => {
         //console.log(name, email, password);
         const hash = bcrypt.hashSync(password, 10);
         return pool.query('insert into yelp.customer (email, password) values ($1, $2)', [email, hash]);
     },
 
-    /*login: (email, password) => {
-        return pool.query('select name, email, password from imagequiz.customer where email = $1', [email])
+    login: (email, password) => {
+        return pool.query('select email, password from yelp.customer where email = $1', [email])
             .then(x => {
                 if (x.rows.length == 1) {
                     let valid = bcrypt.compareSync(password, x.rows[0].password);
@@ -37,7 +37,7 @@ let store = {
                     return { valid: false, message: "Email not found." }
                 }
             });
-    },*/
+    },
 
 }
 
