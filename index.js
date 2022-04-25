@@ -5,6 +5,7 @@ const cors = require('cors');
 const { store } = require('./data_access/store');
 const { response } = require('express');
 const { password } = require('pg/lib/defaults');
+const { request } = require('express');
 
 const application = express();
 const port = process.env.PORT || 4003;
@@ -59,6 +60,21 @@ application.post('/login', (request, response) => {
     .catch(e => {
         console.log(e);
         response.status(500).json({done: false, message: 'Login Error'});
+    });
+});
+
+application.post('/place/:name/:category/:latitude/:longitude', (request, response) => {
+    let name = request.params.name;
+    let category = request.params.category;
+    let latitude = request.params.latitude;
+    let longitude = request.params.longitude;
+    store.place(name, category, latitude, longitude)
+    .then(x => {
+        response.status(200).json({done: true, message: "Post Successful"})
+    })
+    .catch(e => {
+        console.log(e);
+        response.status(500).json({done: false, message: 'Invalid Syntax'});
     });
 });
 

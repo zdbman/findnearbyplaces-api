@@ -25,8 +25,8 @@ create table yelp.loc
 (
 	id bigserial primary key unique,
 	name varchar(256) not null,
-	latitude varchar(8) not null,
-	longitude varchar(8) not null,
+	latitude varchar(100) not null,
+	longitude varchar(100) not null,
 	description varchar(512) not null,
 	category_id int references yelp.category(id),
 	customer_id int references yelp.customer(id)

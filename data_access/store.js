@@ -39,6 +39,9 @@ let store = {
             });
     },
 
+    place: (name, category_id, latitude, longitude, description) => {
+        return pool.query('insert into yelp.loc (name, category_id, latitude, longitude, description) values($1, $2, $3, $4, $5)', [name, category_id, latitude, longitude, description]);
+    },
 }
 
 module.exports = { store }
