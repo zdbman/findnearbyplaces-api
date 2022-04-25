@@ -90,6 +90,10 @@ let store = {
 
     reviewDelete: (review_id) => {
         return pool.query('delete from yelp.reviews where id=$1', [review_id]);
+    },
+
+    reviewDelete: (photo_id) => {
+        return pool.query('delete from yelp.photo where id=$1', [photo_id]);
     }
 }
 

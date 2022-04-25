@@ -144,6 +144,18 @@ application.delete('/review/:review_id', (request, response) => {
     });
 });
 
+application.delete('/photo/:photo_id', (request, response) => {
+    let photo_id = request.params.photo_id;
+    store.photoDelete(photo_id)
+    .then(x => {
+        response.status(200).json({done: true, message: "Photo Successfully Deleted"})
+    })
+    .catch( e => {
+        console.log(e);
+        response.status(500).json({done: false, message: "Deletion Failed"});
+    });
+});
+
 application.listen(port, () => {
     console.log(`Listening to the port ${port}`);
 });
