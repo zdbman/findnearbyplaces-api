@@ -44,7 +44,7 @@ create table yelp.reviews
 create table yelp.photo
 (
 	id bigserial primary key,
-	file varchar(400) not null
+	file bytea not null
 );
 
 create table yelp.place_photo

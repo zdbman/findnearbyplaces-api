@@ -40,48 +40,118 @@ let store = {
             });
     },
 
-    place: (name, category_id, latitude, longitude, description) => {
-        return pool.query('insert into yelp.loc (name, latitude, longitude, description, category_id) values($1, $2, $3, $4, $5)', [name, latitude, longitude, description, category_id]);
+    search: (search_term, user_location, radius_filter, maximum_results_to_return, category_filter, sort) =>{
+        let sqlQuery;
+        let lst = [];
+        if(search_term){
+            sqlQuery = "select * from yelp.loc where name like '%$1%'";
+            lst.push(search_term);
+        }
+        else if(user_location){
+            sqlQuery = "select * from yelp.loc where name like '%$1%'";
+            lst.push(search_term);
+        }
+
+        else if(maximum_results_to_return){
+            sqlQuery = "select * from yelp.loc limit $1";
+            lst.push(maximum_results_to_return);
+        }
+        else if(category_filter){
+            sqlQuery = "select l.* from yelp.category c join yelp.loc l on c.id = l.category_id where lower(c.name) = lower($1);";
+            lst.push(category_filter);
+        }
+        console.log('test');
+        return pool.query(sqlQuery, lst)
+        .then(x => {
+            return {done: true, result: x.rows}
+        });
     },
 
-    getPlaceId: (name, category_id, latitude, longitude, description) => {
-        return pool.query('select id from yelp.loc where (name=$1) and (latitude=$2) and (longitude=$3) and (description=$4) and (category_id=$5) order by id desc limit 1', [name, latitude, longitude, description, category_id])
+    place: (name, category_id, latitude, longitude, description) => {
+        return pool.query('insert into yelp.loc (name, latitude, longitude, description, category_id) values($1, $2, $3, $4, $5) returning id', [name, latitude, longitude, description, category_id])
         .then(x => {
-            if(x.rows.length > 0){
-                return { done: true, id: x.rows, message: "ID Found" };
-            }else{
-                return { done: false, message: 'No ID' };
-            }
-        });
+            return {done: true, id: x.rows[0].id, message: "ID Found"}
+        })
     },
 
     category: (name) => {
         return pool.query('insert into yelp.category (name) values ($1)', [name.toLowerCase()]);
     },
 
-    photo: (photo, place_id, review_id) => {
-        let sqlQuery;
-        if(place_id == null){
-            sqlQuery = 'insert into yelp.place_photo ()'
-        }
+    review: (place_id, comment, rating) => {
+        console.log(place_id, comment, rating);
+        return pool.query('insert into yelp.reviews (location_id, text, rating) values($1, $2, $3) returning id', [place_id, comment, rating])
+        .then(x => {
+            return {done: true, id: x.rows[0].id, message: 'Review Posted Successfully'}
+        });
     },
 
-    placeUpdate: (place_id, name, category_id) => {
-        console.log(place_id, name, category_id);
+    reviewUpdate: (review_id, comment, rating) => {
+        let sqlQuery = 'update yelp.reviews set';
+        let lst = []
+        let index = 1;
+        let values = [];
+        if(comment){
+            lst.push(' text=$' + index);
+            index++;
+            values.push(comment);
+        }
+        if(rating){
+            lst.push(' rating=$' + index);
+            index++;
+            values.push(rating);
+        }
+        sqlQuery += lst.join(', ');
+        sqlQuery += 'where id = $' + index;
+        values.push(review_id);
+        return pool.query(sqlQuery, values);
+    },
+
+    photo: (photo, place_id, review_id) => {
+        let sqlQuery;
+        if(review_id == null){
+            sqlQuery = 'insert into yelp.place_photo (location_id, photo_id) values ($1, $2)';
+        }else{
+            sqlQuery = 'insert into yelp.review_photo (review_id, photo_id) values ($1, $2)';
+        }
+        //return pool.query(sqlQuery, []);
+    },
+
+    placeUpdate: (place_id, name, category_id, latitude, longitude, description) => {
+        console.log(place_id, name, category_id, latitude, longitude, description);
         let sqlQuery = 'update yelp.loc set';
         let lst = []
+        let index = 1;
+        let values = [];
         if(name){
-            sqlQuery += ' name=$2';
-            if(category_id){
-                sqlQuery += ',';
-            }
+            lst.push(' name=$' + index);
+            index++;
+            values.push(name);
         }
         if(category_id){
-            sqlQuery += ' category_id=$3';
+            lst.push(' category_id=$' + index);
+            index++;
+            values.push(category_id);
         }
-
-        sqlQuery += ' where id = $1'
-        return pool.query(sqlQuery, [place_id, name, category_id]);
+        if(latitude){
+            lst.push(' latitude=$' + index);
+            index++;
+            values.push(latitude);
+        }
+        if(longitude){
+            lst.push(' longitude=$' + index);
+            index++;
+            values.push(longitude);
+        }
+        if(description){
+            lst.push(' description=$' + index);
+            index++;
+            values.push(description);
+        }
+        sqlQuery += lst.join(', ');
+        sqlQuery += 'where id = $' + index;
+        values.push(place_id);
+        return pool.query(sqlQuery, values);
     },
 
     placeDelete: (place_id) => {

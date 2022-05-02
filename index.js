@@ -65,6 +65,23 @@ application.post('/login', (request, response) => {
     });
 });
 
+application.get('/search', (request, response) => {
+    let search_term = request.body.search_term;
+    let user_location = request.body.user_location;
+    let radius_filter = request.body.radius_filter;
+    let maximum_results_to_return = request.body.maximum_results_to_return;
+    let category_filter = request.body.category_filter;
+    let sort = request.body.sort;
+    store.place(search_term, user_location, radius_filter, maximum_results_to_return, category_filter, sort)
+    .then(x => {
+        response.status(200).json({done: true, result: x});
+    })
+    .catch(e => {
+        console.log(e);
+        response.status(500).json({done: false, message: "Something went wrong"});
+    });
+});
+
 application.post('/place', (request, response) => {
     let name = request.body.name;
     let category = request.body.category_id;
@@ -73,7 +90,7 @@ application.post('/place', (request, response) => {
     let description = request.body.description;
     store.place(name, category, latitude, longitude, description)
     .then(x => {
-        response.status(200).json({done: true, result: x.id, message: "Place Posted Successfully"})
+        response.status(200).json({done: true, result: x.id, message: "Place Posted Successfully"});
     })
     .catch(e => {
         console.log(e);
@@ -93,7 +110,7 @@ application.post('/category', (request, response) => {
     })
 });
 
-/*application.post('/photo', (request, response) => {
+application.post('/photo', (request, response) => {
     let photo = request.body.photo;
     let place_id = request.body.place_id;
     let review_id = request.body.review_id;
@@ -101,16 +118,46 @@ application.post('/category', (request, response) => {
     .then(x => {
         response.status(200).json({done: true, message: 'test'});
     })
-});*/
+    .catch(e => {
+        response.status(500).json({done: false, message: 'Something went wrong'});
+    })
+});
+
+application.post('/review', (request, response) => {
+    let place_id = request.body.place_id;
+    let comment = request.body.comment;
+    let rating = request.body.rating;
+    store.review(place_id, comment, rating)
+    .then(x => {
+        response.status(200).json({done: true, id: x.id, message: x.message});
+    })
+    .catch(e => {
+        response.status(500).json({done: false, message: 'Something went wrong'});
+    });
+});
+
+application.put('/review', (request, response) => {
+    let review_id = request.body.review_id;
+    let comment = request.body.comment;
+    let rating = request.body.rating;
+    store.reviewUpdate(review_id, comment, rating)
+    .then(x => {
+        response.status(200).json({done: true, message: 'Review Updated Successfully'});
+    })
+    .catch(e => {
+        response.status(500).json({done: false, message: 'Something went wrong'});
+    });
+});
 
 application.put('/place/:place_id', (request, response) => {
     let place_id = request.params.place_id;
     let name = request.body.name;
     let category_id = request.body.category_id;
-    /*let latitude = request.body.latitude;
-    let longitude = request.body.longitude;*/
+    let latitude = request.body.latitude;
+    let longitude = request.body.longitude;
+    let description = request.body.description;
 
-    store.placeUpdate(place_id, name, category_id)
+    store.placeUpdate(place_id, name, category_id, latitude, longitude, description)
     .then(x => {
         response.status(200).json({done: true, message: "Place Change Successful"});
     })
