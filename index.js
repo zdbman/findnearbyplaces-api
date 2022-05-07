@@ -183,6 +183,20 @@ application.get('/place', (request, response) => {
     })
 });
 
+application.get('/restaurant/:id', (request, response) => {
+    let loc_id = request.params.id;
+    store.getRestaurant(loc_id)
+    .then(x => {
+        if(x.id){
+            response.status(200).json({done: true, result: x.restaurant})
+        }
+    })
+    .catch(e => {
+        console.log(e);
+        response.status(500).json({done: false, message: "Something went wrong"});
+    });
+});
+
 application.post('/category', (request, response) => {
     let name = request.body.name;
     store.category(name)

@@ -51,6 +51,17 @@ let store = {
         });
     },
 
+    getRestaurant: (loc_id) => {
+        return pool.query('select * from yelp.loc where id = $1', [loc_id])
+        .then(x => {
+            if(x.rows.length == 1){
+                return {found: true, restaurant: { id: x.rows[0].id, name: x.rows[0].name, description: x.rows[0].description, latitude: x.rows[0].latitude, longitude: x.rows[0].longitude, category_id: x.rows[0].category_id, customer_id: x.rows[0].category_id } }
+            }else{
+                return {found: false}
+            }
+        });
+    },
+
     /*search: (search_term, user_location, radius_filter, maximum_results_to_return, category_filter, sort) =>{
         let sqlQuery;
         function getDistance(latitude1, longitude1, latitude2, longitude2){   
