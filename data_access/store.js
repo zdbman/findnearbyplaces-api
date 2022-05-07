@@ -25,12 +25,12 @@ let store = {
     },
 
     login: (email, password) => {
-        return pool.query('select email, password from yelp.customer where email = $1', [email])
+        return pool.query('select id, email, password from yelp.customer where email = $1', [email])
             .then(x => {
                 if (x.rows.length == 1) {
                     let valid = bcrypt.compareSync(password, x.rows[0].password);
                     if (valid) {
-                        return { valid: true };
+                        return { valid: true, user: {id: x.rows[0].id, username: x.rows[0].email} };
                     } else {
                         return { valid: false, message: "Credentials not valid." }
                     }
@@ -40,16 +40,16 @@ let store = {
             });
     },
 
-    /*getLocation: () => {
+    getLocation: () => {
         return pool.query('select * from yelp.loc')
         .then(x => {
             if(x.rows.length > 0){
-                return { done: true, result: x.rows, message: "Restaurants Found" };
+                return { done: true, result: x.rows, message: "Restaurants Found!" };
             }else{
                 return { done: false, message: 'No Restaurants' };
             }
         });
-    },*/
+    },
 
     /*search: (search_term, user_location, radius_filter, maximum_results_to_return, category_filter, sort) =>{
         let sqlQuery;
@@ -104,9 +104,9 @@ let store = {
         return pool.query('insert into yelp.category (name) values ($1)', [name.toLowerCase()]);
     },
 
-    review: (place_id, comment, rating) => {
-        console.log(place_id, comment, rating);
-        return pool.query('insert into yelp.reviews (location_id, text, rating) values($1, $2, $3) returning id', [place_id, comment, rating])
+    review: (place_id, comment, rating, customer_id) => {
+        console.log(place_id, customer_id, comment, rating);
+        return pool.query('insert into yelp.reviews (location_id, customer_id, text, rating) values($1, $2, $3, $4) returning id', [place_id, customer_id, comment, rating])
         .then(x => {
             return {done: true, id: x.rows[0].id, message: 'Review Posted Successfully'}
         });
