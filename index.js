@@ -7,14 +7,71 @@ const { response } = require('express');
 const { password } = require('pg/lib/defaults');
 const { request } = require('express');
 const res = require('express/lib/response');
+var session = require('express-session');
+var SQLiteStore = require('connect-sqlite3')(session);
+var passport = require('passport');
+var LocalStrategy = require('passport-local');
 //const fileUpload = require('express-fileupload');
-
+let userID;
 const application = express();
 const port = process.env.PORT || 4003;
+let frontendUrl = 'http://localhost:3000';
 
 //middlewares
-application.use(cors());
+//application.use(cors());
+application.use(cors({
+    origin: frontendUrl,
+    credentials: true
+}));
 application.use(express.json());
+
+
+application.use((request, response, next) => {
+    console.log(`request url: ${request.url}`);
+    console.log(`request method: ${request.method}`);
+    //only for development.  Remove the next two line when you deploy your final version.
+    console.log(`request body:`);
+    console.log(request.body);
+    next();
+});
+
+passport.use(
+    new LocalStrategy({ usernameField: 'email' }, function verify(username, password, cb) {
+        store.login(username, password)
+            .then(x => {
+                if (x.valid) {
+                    userID = x.user.id;
+                    return cb(null, x.user);
+                } else {
+                    return cb(null, false, { message: 'Incorrect username or password.' });
+                }
+            })
+            .catch(e => {
+                console.log(e);
+                cb('Somethign went wrong!');
+            });
+
+    }));
+
+application.use(session({
+    secret: 'keyboard cat',
+    resave: false,
+    saveUninitialized: false,
+    store: new SQLiteStore({ db: 'sessions.db', dir: './sessions' })
+}));
+application.use(passport.authenticate('session'));
+
+passport.serializeUser(function (user, cb) {
+    process.nextTick(function () {
+        cb(null, { id: user.id, username: user.username });
+    });
+});
+
+passport.deserializeUser(function (user, cb) {
+    process.nextTick(function () {
+        return cb(null, user);
+    });
+});
 
 //Methods
 application.get('/', (request, response) => {
@@ -49,7 +106,7 @@ application.post('/register', (request, response) => {
         });
 });
 
-application.post('/login', (request, response) => {
+/*application.post('/login-old', (request, response) => {
     let email = request.body.email;
     let password = request.body.password;
     store.login(email, password)
@@ -64,9 +121,23 @@ application.post('/login', (request, response) => {
         console.log(e);
         response.status(500).json({done: false, message: 'Login Error'});
     });
+});*/
+
+application.post('/login', passport.authenticate('local', {
+    successRedirect: '/login/succeeded',
+    failureRedirect: '/login/failed'
+}));
+
+application.get('/login/succeeded', (request, response) => {
+    response.status(200).json({ done: true, message: "Customer login successful" });
 });
 
-/*application.get('/search:search_term/:user_location/:radius_filter/:maximum_results_to_return/:category_filter/:sort', (request, response) => {
+application.get('/login/failed', (request, response) => {
+    response.status(401).json({ done: false, message: "Invalid Credentials" });
+});
+
+
+application.get('/search:search_term/:user_location/:radius_filter/:maximum_results_to_return/:category_filter/:sort', (request, response) => {
     let search_term = request.params.search_term;
     let user_location = request.params.user_location;
     let radius_filter = request.params.radius_filter;
@@ -82,7 +153,7 @@ application.post('/login', (request, response) => {
         console.log(e);
         response.status(500).json({done: false, message: "Something went wrong"});
     });
-});*/
+});
 
 application.post('/place', (request, response) => {
     let name = request.body.name;
@@ -99,6 +170,17 @@ application.post('/place', (request, response) => {
         console.log(e);
         response.status(500).json({done: false, message: 'Invalid Syntax'});
     });
+});
+
+application.get('/place', (request, response) => {
+    store.getLocation()
+    .then(x => {
+        if(x.done){
+            response.status(200).json({done: true, result: x.result, message: x.message})
+        }else{
+            return {done: false, message: x.message};
+        }
+    })
 });
 
 application.post('/category', (request, response) => {
@@ -127,19 +209,25 @@ application.post('/photo', (request, response) => {
 });
 
 application.post('/review', (request, response) => {
-    let place_id = request.body.place_id;
-    let comment = request.body.comment;
-    let rating = request.body.rating;
-    store.review(place_id, comment, rating)
-    .then(x => {
-        response.status(200).json({done: true, id: x.id, message: x.message});
-    })
-    .catch(e => {
-        response.status(500).json({done: false, message: 'Something went wrong'});
-    });
+    if(!request.isAuthenticated()){
+        response.status(401).json({done: false, message: "Please sign in first."})
+    }else{
+        let place_id = request.body.place_id;
+        let comment = request.body.comment;
+        let rating = request.body.rating;
+        let customer_id = userID;
+        //console.log("test " + userID);
+        store.review(place_id, comment, rating, customer_id)
+        .then(x => {
+            response.status(200).json({done: true, id: x.id, message: x.message});
+        })
+        .catch(e => {
+            response.status(500).json({done: false, message: 'Something went wrong'});
+        });
+    }
 });
 
-/*application.put('/review', (request, response) => {
+application.put('/review', (request, response) => {
     let review_id = request.body.review_id;
     let comment = request.body.comment;
     let rating = request.body.rating;
@@ -150,7 +238,7 @@ application.post('/review', (request, response) => {
     .catch(e => {
         response.status(500).json({done: false, message: 'Something went wrong'});
     });
-});*/
+});
 
 application.put('/place/:place_id', (request, response) => {
     let place_id = request.params.place_id;
