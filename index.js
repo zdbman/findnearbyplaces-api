@@ -66,7 +66,7 @@ application.post('/login', (request, response) => {
     });
 });
 
-application.get('/search:search_term/:user_location/:radius_filter/:maximum_results_to_return/:category_filter/:sort', (request, response) => {
+/*application.get('/search:search_term/:user_location/:radius_filter/:maximum_results_to_return/:category_filter/:sort', (request, response) => {
     let search_term = request.params.search_term;
     let user_location = request.params.user_location;
     let radius_filter = request.params.radius_filter;
@@ -82,7 +82,7 @@ application.get('/search:search_term/:user_location/:radius_filter/:maximum_resu
         console.log(e);
         response.status(500).json({done: false, message: "Something went wrong"});
     });
-});
+});*/
 
 application.post('/place', (request, response) => {
     let name = request.body.name;
@@ -139,7 +139,7 @@ application.post('/review', (request, response) => {
     });
 });
 
-application.put('/review', (request, response) => {
+/*application.put('/review', (request, response) => {
     let review_id = request.body.review_id;
     let comment = request.body.comment;
     let rating = request.body.rating;
@@ -150,7 +150,7 @@ application.put('/review', (request, response) => {
     .catch(e => {
         response.status(500).json({done: false, message: 'Something went wrong'});
     });
-});
+});*/
 
 application.put('/place/:place_id', (request, response) => {
     let place_id = request.params.place_id;
