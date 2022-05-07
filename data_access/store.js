@@ -40,9 +40,25 @@ let store = {
             });
     },
 
+    /*getLocation: () => {
+        return pool.query('select * from yelp.loc')
+        .then(x => {
+            if(x.rows.length > 0){
+                return { done: true, result: x.rows, message: "Restaurants Found" };
+            }else{
+                return { done: false, message: 'No Restaurants' };
+            }
+        });
+    },*/
+
     search: (search_term, user_location, radius_filter, maximum_results_to_return, category_filter, sort) =>{
         let sqlQuery;
-        let lst = [];
+        function getDistance(latitude1, longitude1, latitude2, longitude2){   
+            let y = latitude2 - latitude1;    
+            let x = longitude2 - longitude1;        
+            return Math.sqrt(x * x + y * y);   
+        }
+        /*let lst = [];
         if(search_term){
             sqlQuery = "select * from yelp.loc where name like '%$1%'";
             lst.push(search_term);
@@ -61,14 +77,24 @@ let store = {
             lst.push(category_filter);
         }
         console.log('test');
-        return pool.query(sqlQuery, lst)
+        let radius = user_location;
+        return pool.query("select * from yelp.loc where name like '%$1%' OR ", [search_term, ])
         .then(x => {
             return {done: true, result: x.rows}
+        });*/
+        sqlQuery = "select * from yelp.loc inner join yelp.category on yelp.category.id  = yelp.loc.category_id where lower(yelp.loc.name) like lower(%$1%) or lower(yelp.category.name) like '%$1%'";
+        return pool.query(sqlQuery, [search_term])
+        .then(x => {
+            return {done: true, result: x.rows}
+        })
+        .catch(e => {
+            console.log(e);
+            return {done: false, message: 'Could not search'}
         });
     },
 
-    place: (name, category_id, latitude, longitude, description) => {
-        return pool.query('insert into yelp.loc (name, latitude, longitude, description, category_id) values($1, $2, $3, $4, $5) returning id', [name, latitude, longitude, description, category_id])
+    place: (name, category_id, latitude, longitude, description, customer_id) => {
+        return pool.query('insert into yelp.loc (name, latitude, longitude, description, category_id, customer_id) values($1, $2, $3, $4, $5, $6) returning id', [name, latitude, longitude, description, category_id, customer_id])
         .then(x => {
             return {done: true, id: x.rows[0].id, message: "ID Found"}
         })
@@ -165,6 +191,7 @@ let store = {
     reviewDelete: (photo_id) => {
         return pool.query('delete from yelp.photo where id=$1', [photo_id]);
     }
+    
 }
 
 module.exports = { store }

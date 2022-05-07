@@ -7,6 +7,7 @@ const { response } = require('express');
 const { password } = require('pg/lib/defaults');
 const { request } = require('express');
 const res = require('express/lib/response');
+const fileUpload = require('express-fileupload');
 
 const application = express();
 const port = process.env.PORT || 4003;
@@ -20,13 +21,13 @@ application.get('/', (request, response) => {
     response.status(200).json({ done: true, message: "Done" });
 });
 
-application.get('/search/:search_term/:user_location/:radius_filter/:maximum_results_to_return/:category_filter/:sort', (request, response) => {
-    let search_term = request.params.search_term;
-    let user_location = request.params.user_location;
-    let radius_filter = request.params.radius_filtr;
-    let maximum_results_to_return = request.params.maximum_results_to_return;
-    let category_filter = request.params.category_filter;
-    let sort = request.params.sort;
+application.get('/search/', (request, response) => {
+    let search_term = request.body.search_term;
+    let user_location = request.body.user_location;
+    let radius_filter = request.body.radius_filtr;
+    let maximum_results_to_return = request.body.maximum_results_to_return;
+    let category_filter = request.body.category_filter;
+    let sort = request.body.sort;
 
     store.search(search_term, user_location, radius_filter, maximum_results_to_return, category_filter, sort)
         .then(x => response.status(200).json({ done: true, message: "" }))
@@ -65,13 +66,14 @@ application.post('/login', (request, response) => {
     });
 });
 
-application.get('/search', (request, response) => {
-    let search_term = request.body.search_term;
-    let user_location = request.body.user_location;
-    let radius_filter = request.body.radius_filter;
-    let maximum_results_to_return = request.body.maximum_results_to_return;
-    let category_filter = request.body.category_filter;
-    let sort = request.body.sort;
+application.get('/search:search_term/:user_location/:radius_filter/:maximum_results_to_return/:category_filter/:sort', (request, response) => {
+    let search_term = request.params.search_term;
+    let user_location = request.params.user_location;
+    let radius_filter = request.params.radius_filter;
+    let maximum_results_to_return = request.params.maximum_results_to_return;
+    let category_filter = request.params.category_filter;
+    let sort = request.params.sort;
+
     store.place(search_term, user_location, radius_filter, maximum_results_to_return, category_filter, sort)
     .then(x => {
         response.status(200).json({done: true, result: x});
@@ -88,7 +90,8 @@ application.post('/place', (request, response) => {
     let latitude = request.body.latitude;
     let longitude = request.body.longitude;
     let description = request.body.description;
-    store.place(name, category, latitude, longitude, description)
+    let customer = request.body.customer_id;
+    store.place(name, category, latitude, longitude, description, customer)
     .then(x => {
         response.status(200).json({done: true, result: x.id, message: "Place Posted Successfully"});
     })
@@ -201,6 +204,11 @@ application.delete('/photo/:photo_id', (request, response) => {
         console.log(e);
         response.status(500).json({done: false, message: "Deletion Failed"});
     });
+});
+
+application.post('/logout', function (request, response) {
+    request.logout();
+    response.json({ done: true, message: 'The customer signed out successfully.' });
 });
 
 application.listen(port, () => {
