@@ -62,6 +62,17 @@ let store = {
         });
     },
 
+    getReviews: (loc_id) => {
+        return pool.query('select * from yelp.reviews where location_id = $1', [loc_id])
+        .then(x => {
+            if(x.rows.length > 0){
+                return { done: true, result: x.rows, message: "Reviews on Restaurant Found!" };
+            }else{
+                return { done: false, message: 'No Reviews on this Restaurant' };
+            }
+        });
+    },
+
     /*search: (search_term, user_location, radius_filter, maximum_results_to_return, category_filter, sort) =>{
         let sqlQuery;
         function getDistance(latitude1, longitude1, latitude2, longitude2){   

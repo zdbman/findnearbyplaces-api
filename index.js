@@ -146,65 +146,82 @@ application.get('/search:search_term/:user_location/:radius_filter/:maximum_resu
     let sort = request.params.sort;
 
     store.place(search_term, user_location, radius_filter, maximum_results_to_return, category_filter, sort)
-    .then(x => {
-        response.status(200).json({done: true, result: x});
-    })
-    .catch(e => {
-        console.log(e);
-        response.status(500).json({done: false, message: "Something went wrong"});
-    });
+        .then(x => {
+            response.status(200).json({ done: true, result: x });
+        })
+        .catch(e => {
+            console.log(e);
+            response.status(500).json({ done: false, message: "Something went wrong" });
+        });
 });
 
 application.post('/place', (request, response) => {
-    let name = request.body.name;
-    let category = request.body.category_id;
-    let latitude = request.body.latitude;
-    let longitude = request.body.longitude;
-    let description = request.body.description;
-    let customer = request.body.customer_id;
-    store.place(name, category, latitude, longitude, description, customer)
-    .then(x => {
-        response.status(200).json({done: true, result: x.id, message: "Place Posted Successfully"});
-    })
-    .catch(e => {
-        console.log(e);
-        response.status(500).json({done: false, message: 'Invalid Syntax'});
-    });
+    if (!request.isAuthenticated()) {
+        response.status(401).json({ done: false, message: "Please sign in first." })
+    } else {
+        let name = request.body.name;
+        let category = request.body.category_id;
+        let latitude = request.body.latitude;
+        let longitude = request.body.longitude;
+        let description = request.body.description;
+        let customer = userID;
+        store.place(name, category, latitude, longitude, description, customer)
+            .then(x => {
+                response.status(200).json({ done: true, result: x.id, message: "Place Posted Successfully" });
+            })
+            .catch(e => {
+                console.log(e);
+                response.status(500).json({ done: false, message: 'Invalid Syntax' });
+            });
+    }
 });
 
 application.get('/place', (request, response) => {
     store.getLocation()
-    .then(x => {
-        if(x.done){
-            response.status(200).json({done: true, result: x.result, message: x.message})
-        }else{
-            return {done: false, message: x.message};
-        }
-    })
+        .then(x => {
+            if (x.done) {
+                response.status(200).json({ done: true, result: x.result, message: x.message });
+            } else {
+                return { done: false, message: x.message };
+            }
+        });
 });
 
 application.get('/restaurant/:id', (request, response) => {
     let loc_id = request.params.id;
     store.getRestaurant(loc_id)
-    .then(x => {
-        response.status(200).json({done: x.found, result: x})
-    })
-    .catch(e => {
-        console.log(e);
-        response.status(500).json({done: false, message: "Something went wrong"});
-    });
+        .then(x => {
+            response.status(200).json({ done: x.found, result: x });
+        })
+        .catch(e => {
+            console.log(e);
+            response.status(500).json({ done: false, message: "Something went wrong" });
+        });
+});
+
+application.get(`/restaurant/:id/reviews`, (request, response) => {
+    let loc_id = request.params.id;
+    store.getReviews(loc_id)
+        .then(x => {
+            response.status(200).json({ done: x.done, result: x.result });
+        })
+        .catch(e => {
+            console.log(e);
+            response.status(500).json({ done: false, message: "Something went wrong" });
+        });
+
 });
 
 application.post('/category', (request, response) => {
     let name = request.body.name;
     store.category(name)
-    .then(x => {
-        response.status(200).json({done: true, message: "Category Posted Successfully"});
-    })
-    .catch(e => {
-        console.log(e);
-        response.status(500).json({done: false, message: "Category Failed to Post"})
-    })
+        .then(x => {
+            response.status(200).json({ done: true, message: "Category Posted Successfully" });
+        })
+        .catch(e => {
+            console.log(e);
+            response.status(500).json({ done: false, message: "Category Failed to Post" })
+        })
 });
 
 application.post('/photo', (request, response) => {
@@ -212,30 +229,30 @@ application.post('/photo', (request, response) => {
     let place_id = request.body.place_id;
     let review_id = request.body.review_id;
     store.photo(photo, place_id, review_id)
-    .then(x => {
-        response.status(200).json({done: true, message: 'test'});
-    })
-    .catch(e => {
-        response.status(500).json({done: false, message: 'Something went wrong'});
-    })
+        .then(x => {
+            response.status(200).json({ done: true, message: 'test' });
+        })
+        .catch(e => {
+            response.status(500).json({ done: false, message: 'Something went wrong' });
+        })
 });
 
 application.post('/review', (request, response) => {
-    if(!request.isAuthenticated()){
-        response.status(401).json({done: false, message: "Please sign in first."})
-    }else{
+    if (!request.isAuthenticated()) {
+        response.status(401).json({ done: false, message: "Please sign in first." })
+    } else {
         let place_id = request.body.place_id;
         let comment = request.body.comment;
         let rating = request.body.rating;
         let customer_id = userID;
         //console.log("test " + userID);
         store.review(place_id, comment, rating, customer_id)
-        .then(x => {
-            response.status(200).json({done: true, id: x.id, message: x.message});
-        })
-        .catch(e => {
-            response.status(500).json({done: false, message: 'Something went wrong'});
-        });
+            .then(x => {
+                response.status(200).json({ done: true, id: x.id, message: x.message });
+            })
+            .catch(e => {
+                response.status(500).json({ done: false, message: 'Something went wrong' });
+            });
     }
 });
 
@@ -244,12 +261,12 @@ application.put('/review', (request, response) => {
     let comment = request.body.comment;
     let rating = request.body.rating;
     store.reviewUpdate(review_id, comment, rating)
-    .then(x => {
-        response.status(200).json({done: true, message: 'Review Updated Successfully'});
-    })
-    .catch(e => {
-        response.status(500).json({done: false, message: 'Something went wrong'});
-    });
+        .then(x => {
+            response.status(200).json({ done: true, message: 'Review Updated Successfully' });
+        })
+        .catch(e => {
+            response.status(500).json({ done: false, message: 'Something went wrong' });
+        });
 });
 
 application.put('/place/:place_id', (request, response) => {
@@ -261,49 +278,49 @@ application.put('/place/:place_id', (request, response) => {
     let description = request.body.description;
 
     store.placeUpdate(place_id, name, category_id, latitude, longitude, description)
-    .then(x => {
-        response.status(200).json({done: true, message: "Place Change Successful"});
-    })
-    .catch(e => {
-        console.log(e);
-        response.status(500).json({done: false, message: "Change Failed"})
-    });
+        .then(x => {
+            response.status(200).json({ done: true, message: "Place Change Successful" });
+        })
+        .catch(e => {
+            console.log(e);
+            response.status(500).json({ done: false, message: "Change Failed" })
+        });
 });
 
 application.delete('/place/:place_id', (request, response) => {
     let place_id = request.params.place_id;
     store.placeDelete(place_id)
-    .then(x => {
-        response.status(200).json({done: true, message: "Place Successfully Deleted"})
-    })
-    .catch( e => {
-        console.log(e);
-        response.status(500).json({done: false, message: "Deletion Failed"});
-    });
+        .then(x => {
+            response.status(200).json({ done: true, message: "Place Successfully Deleted" })
+        })
+        .catch(e => {
+            console.log(e);
+            response.status(500).json({ done: false, message: "Deletion Failed" });
+        });
 });
 
 application.delete('/review/:review_id', (request, response) => {
     let review_id = request.params.review_id;
     store.reviewDelete(review_id)
-    .then(x => {
-        response.status(200).json({done: true, message: "Review Successfully Deleted"})
-    })
-    .catch( e => {
-        console.log(e);
-        response.status(500).json({done: false, message: "Deletion Failed"});
-    });
+        .then(x => {
+            response.status(200).json({ done: true, message: "Review Successfully Deleted" })
+        })
+        .catch(e => {
+            console.log(e);
+            response.status(500).json({ done: false, message: "Deletion Failed" });
+        });
 });
 
 application.delete('/photo/:photo_id', (request, response) => {
     let photo_id = request.params.photo_id;
     store.photoDelete(photo_id)
-    .then(x => {
-        response.status(200).json({done: true, message: "Photo Successfully Deleted"})
-    })
-    .catch( e => {
-        console.log(e);
-        response.status(500).json({done: false, message: "Deletion Failed"});
-    });
+        .then(x => {
+            response.status(200).json({ done: true, message: "Photo Successfully Deleted" })
+        })
+        .catch(e => {
+            console.log(e);
+            response.status(500).json({ done: false, message: "Deletion Failed" });
+        });
 });
 
 application.post('/logout', function (request, response) {
