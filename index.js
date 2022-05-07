@@ -7,7 +7,7 @@ const { response } = require('express');
 const { password } = require('pg/lib/defaults');
 const { request } = require('express');
 const res = require('express/lib/response');
-const fileUpload = require('express-fileupload');
+//const fileUpload = require('express-fileupload');
 
 const application = express();
 const port = process.env.PORT || 4003;
