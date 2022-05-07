@@ -55,7 +55,7 @@ let store = {
         return pool.query('select * from yelp.loc where id = $1', [loc_id])
         .then(x => {
             if(x.rows.length == 1){
-                return {found: true, restaurant: { id: x.rows[0].id, name: x.rows[0].name, description: x.rows[0].description, latitude: x.rows[0].latitude, longitude: x.rows[0].longitude, category_id: x.rows[0].category_id, customer_id: x.rows[0].category_id } }
+                return {found: true, restaurant: { id: x.rows[0].id, name: x.rows[0].name, description: x.rows[0].description, latitude: x.rows[0].latitude, longitude: x.rows[0].longitude, category_id: x.rows[0].category_id, customer_id: x.rows[0].customer_id } }
             }else{
                 return {found: false}
             }

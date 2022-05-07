@@ -187,9 +187,7 @@ application.get('/restaurant/:id', (request, response) => {
     let loc_id = request.params.id;
     store.getRestaurant(loc_id)
     .then(x => {
-        if(x.id){
-            response.status(200).json({done: true, result: x.restaurant})
-        }
+        response.status(200).json({done: x.found, result: x})
     })
     .catch(e => {
         console.log(e);
