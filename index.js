@@ -15,8 +15,8 @@ var LocalStrategy = require('passport-local');
 let userID;
 const application = express();
 const port = process.env.PORT || 4003;
-//let frontendUrl = 'http://localhost:3000';
-let frontendUrl = 'https://zdbman.github.io/';
+let frontendUrl = 'http://localhost:3000';
+//let frontendUrl = 'https://zdbman.github.io/';
 
 //middlewares
 //application.use(cors());
@@ -156,15 +156,15 @@ application.get('/search:search_term/:user_location/:radius_filter/:maximum_resu
         });
 });
 
-application.post('/post', (request, response) => {
+application.post('/posts', (request, response) => {
     if (!request.isAuthenticated()) {
         response.status(401).json({ done: false, message: "Please sign in first." })
     } else {
         let name = request.body.name;
-        let category = request.body.category_id;
-        let latitude = request.body.latitude;
-        let longitude = request.body.longitude;
-        let description = request.body.description;
+        let category = request.body.cat;
+        let latitude = request.body.lat;
+        let longitude = request.body.lon;
+        let description = request.body.des;
         let customer = userID;
         console.log(customer);
         store.place(name, category, latitude, longitude, description, customer)
