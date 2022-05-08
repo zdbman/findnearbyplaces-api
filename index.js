@@ -15,8 +15,8 @@ var LocalStrategy = require('passport-local');
 let userID;
 const application = express();
 const port = process.env.PORT || 4003;
-let frontendUrl = 'http://localhost:3000';
-//let frontendUrl = 'https://zdbman.github.io/';
+//let frontendUrl = 'http://localhost:3000';
+let frontendUrl = 'https://zdbman.github.io/';
 
 //middlewares
 //application.use(cors());
