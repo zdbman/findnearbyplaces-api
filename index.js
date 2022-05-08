@@ -15,7 +15,8 @@ var LocalStrategy = require('passport-local');
 let userID;
 const application = express();
 const port = process.env.PORT || 4003;
-let frontendUrl = 'https://zdbman.github.io/';
+let frontendUrl = 'http://localhost:3000';
+//https://zdbman.github.io/
 
 //middlewares
 //application.use(cors());
@@ -155,7 +156,7 @@ application.get('/search:search_term/:user_location/:radius_filter/:maximum_resu
         });
 });
 
-application.post('/place', (request, response) => {
+application.post('/post', (request, response) => {
     if (!request.isAuthenticated()) {
         response.status(401).json({ done: false, message: "Please sign in first." })
     } else {
@@ -165,15 +166,28 @@ application.post('/place', (request, response) => {
         let longitude = request.body.longitude;
         let description = request.body.description;
         let customer = userID;
+        console.log(customer);
         store.place(name, category, latitude, longitude, description, customer)
             .then(x => {
                 response.status(200).json({ done: true, result: x.id, message: "Place Posted Successfully" });
             })
             .catch(e => {
                 console.log(e);
-                response.status(500).json({ done: false, message: 'Invalid Syntax' });
+                response.status(500).json({ done: false, message: 'Something went wrong' });
             });
     }
+});
+
+application.get('/restphoto/:id', (request, response) => {
+    let id = request.params.id;
+    store.getRestaurantPhoto(id)
+        .then(x => {
+            response.status(200).json({ done: true, result: x.result, message: x.message });
+        })
+        .catch(e => {
+            console.log(e);
+            response.status(500).json({ done: false, message: 'Something went wrong' });
+        })
 });
 
 application.get('/place', (request, response) => {
@@ -184,6 +198,10 @@ application.get('/place', (request, response) => {
             } else {
                 return { done: false, message: x.message };
             }
+        })
+        .catch(e => {
+            console.log(e);
+            response.status(500).json({ done: false, message: 'Something went wrong' })
         });
 });
 

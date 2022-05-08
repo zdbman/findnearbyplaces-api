@@ -62,6 +62,17 @@ let store = {
         });
     },
 
+    getRestaurantPhoto: (loc_id) => {
+        return pool.query('select * from yelp.loc l join yelp.place_photo pp on l.id = pp.location_id join yelp.photo p on pp.photo_id = p.id where l.id = $1;', [loc_id])
+        .then(x => {
+            if(x.rows.length > 0){
+                return {found: true, result: x.rows[0], message: "Photo Found Successfull"}
+            }else{
+                return {found: false, message: "No Photo Found"}
+            }
+        });
+    },
+
     getReviews: (loc_id) => {
         return pool.query('select * from yelp.reviews where location_id = $1', [loc_id])
         .then(x => {
@@ -115,8 +126,8 @@ let store = {
         });
     },*/
 
-    place: (name, category_id, latitude, longitude, description, customer_id) => {
-        return pool.query('insert into yelp.loc (name, latitude, longitude, description, category_id, customer_id) values($1, $2, $3, $4, $5, $6) returning id', [name, latitude, longitude, description, category_id, customer_id])
+    place: (name, category_id, latitude, longitude, description) => {
+        return pool.query('insert into yelp.loc (name, latitude, longitude, description, category_id) values($1, $2, $3, $4, $5, $6) returning id', [name, latitude, longitude, description, category_id])
         .then(x => {
             return {done: true, id: x.rows[0].id, message: "ID Found"}
         })
